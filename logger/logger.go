@@ -943,6 +943,10 @@ func SetLevelOption(level LEVELTYPE, option *LevelOption) *Logging {
 func (t *Logging) SetLevelOption(level LEVELTYPE, option *LevelOption) *Logging {
 	if level > LEVEL_ALL && level < LEVEL_OFF {
 		t.leveloption[level-1] = option
+	} else if level == LEVEL_ALL {
+		for i := 0; i < len(t.leveloption); i++ {
+			t.leveloption[i] = option
+		}
 	}
 	return t
 }
@@ -1423,7 +1427,15 @@ func parseAndFormatLog(formatStr *string, buf, levelbuf, timebuf, filebuf *buffe
 					buf.Write(filebuf.Bytes())
 				case "message":
 					buf.Write(msg)
+				default:
+					buf.WriteByte('{')
+					buf.WriteString(placeholder)
+					buf.WriteByte('}')
 				}
+				placeholder = ""
+			} else if c == '{' {
+				buf.WriteByte('{')
+				buf.WriteString(placeholder)
 				placeholder = ""
 			} else {
 				placeholder += string(c)
