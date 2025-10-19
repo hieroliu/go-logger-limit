@@ -1,4 +1,5 @@
-# go-logger-limit v1.3.0 功能限定版
+# go-logger-limit v1.3.0 功能限定版 [[English]](https://github.com/hieroliu/go-logger-limit/blob/master/README_en.md)
+
 
 **主要功能fork自 "[github.com/donnie4w/go-logger](https://github.com/donnie4w/go-logger)"**，
 1. 新增控制台输出根据日志级别显示不同颜色功能，分别为：DEBUG(浅蓝色)、INFO1(绿色)、WARN(浅黄色)、ERROR(红色)、FATAL(红色背景)。
@@ -6,7 +7,7 @@
 3. 增加毫秒时间格式化选项 FORMAT_MILLISECONDS，支持日志时间精确到毫秒（如 01:23:23.123）。
 
 
-## go-logger 高性能golang日志库 v0.29 [[original English]](https://github.com/hieroliu/go-logger-limit/README_en.md)
+## go-logger 高性能golang日志库 v0.29 [[original English]](https://github.com/donnie4w/go-logger/blob/master/README_en.md)
 
 ------------
 

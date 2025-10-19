@@ -1,4 +1,4 @@
-# go-logger-limit v1.3.0 Feature-limited Version
+# go-logger-limit v1.3.0 Feature-limited Version [[中文]](https://github.com/hieroliu/go-logger-limit/blob/master/README.md)
 **The main function is to fork from "[github.com/donnie4w/go-logger](https://github.com/donnie4w/go-logger)"**,
 1. The newly added console output feature displays different colors based on the log level, specifically: DEBUG (light blue), INFO1 (green), WARN (light yellow), ERROR (red), and FATAL (with a red background).
 2. Fix the log levels to [DBG], [INF], [WRN], [ERR], [FAT], maintain a fixed length, and do not support custom log levels (which may affect slog's log level judgment);
