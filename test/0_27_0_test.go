@@ -1,9 +1,10 @@
 package test
 
 import (
-	"github.com/donnie4w/go-logger/logger"
 	"testing"
 	"time"
+
+	"github.com/hieroliu/go-logger-limit/logger"
 )
 
 func Test_AttrFormat(t *testing.T) {

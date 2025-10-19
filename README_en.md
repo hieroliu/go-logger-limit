@@ -1,6 +1,11 @@
-## go-logger: A high-performance logging library for Golang [[中文]](https://github.com/donnie4w/go-logger/blob/master/README.md)
+# go-logger-limit v1.3.0 Feature-limited Version
+**The main function is to fork from "[github.com/donnie4w/go-logger](https://github.com/donnie4w/go-logger)"**,
+1. The newly added console output feature displays different colors based on the log level, specifically: DEBUG (light blue), INFO1 (green), WARN (light yellow), ERROR (red), and FATAL (with a red background).
+2. Fix the log levels to [DBG], [INF], [WRN], [ERR], [FAT], maintain a fixed length, and do not support custom log levels (which may affect slog's log level judgment);
+3. Add the millisecond formatting option FORMAT_MILLISECONDS to support logging time with precision down to milliseconds (e.g., 01:23:23.123).
 
 ------------
+## go-logger: A high-performance logging library for Golang v0.29 [[原中文]](https://github.com/donnie4w/go-logger/blob/master/README.md)
 
 ### Performance Highlights
 
@@ -42,7 +47,7 @@ Relative path and line number               FORMAT_RELATIVEFILENAME e.g., logger
 Date precision                              FORMAT_DATE             e.g., 2023/02/14
 Second precision                            FORMAT_TIME             e.g., 01:33:27
 Microsecond precision                       FORMAT_MICROSECONDS     e.g., 01:33:27.123456
-Log level indicator                         FORMAT_LEVELFLAG        e.g., [Debug],[Info],[Warn][Error][Fatal]             
+Log level indicator                         FORMAT_LEVELFLAG        e.g., [DBG],[INF],[WRN],[ERR],[FAT]             
 Function name                               FORMAT_FUNC             Function name appears after filename if set
 ```
 

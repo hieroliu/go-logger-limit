@@ -2,8 +2,9 @@ package test
 
 import (
 	"fmt"
-	"github.com/donnie4w/go-logger/logger"
 	"testing"
+
+	"github.com/hieroliu/go-logger-limit/logger"
 )
 
 func TestCustomHandler(t *testing.T) {

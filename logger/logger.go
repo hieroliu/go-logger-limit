@@ -26,6 +26,7 @@ import (
 	"github.com/donnie4w/gofer/buffer"
 	. "github.com/donnie4w/gofer/fastio"
 	"github.com/donnie4w/gofer/hashmap"
+	"github.com/fatih/color"
 )
 
 type LEVELTYPE int8
@@ -103,9 +104,15 @@ const (
 	// 时间精确到微秒
 	FORMAT_MICROSECONDS = _FORMAT(4)
 
+	// FORMAT_MILLISECONDS
+	//
+	// millisecond resolution: 01:23:23.123.
+	// 时间精确到毫秒
+	FORMAT_MILLISECONDS = _FORMAT(512) // 使用512作为标志位值，避免与FORMAT_NANO冲突
+
 	// FORMAT_LEVELFLAG
 	//
-	//Log level flag. e.g. [DEBUG],[INFO],[WARN],[ERROR],[FATAL]
+	//Log level flag. e.g. [DBG],[INF],[WRN],[ERR],[FAT]
 	// 日志级别表示
 	FORMAT_LEVELFLAG = _FORMAT(32)
 
@@ -147,7 +154,7 @@ const (
 	LEVEL_OFF
 )
 
-var _DEBUG, _INFO, _WARN, _ERROR, _FATALE = []byte("[DEBUG]"), []byte("[INFO]"), []byte("[WARN]"), []byte("[ERROR]"), []byte("[FATAL]")
+var _DEBUG, _INFO, _WARN, _ERROR, _FATALE = []byte("[DBG]"), []byte("[INF]"), []byte("[WRN]"), []byte("[ERR]"), []byte("[FAT]")
 
 const (
 	_TIMEMODE  _CUTMODE = 1
@@ -157,7 +164,7 @@ const (
 
 // 使用常量定义标志位组合
 const (
-	timeFlags = FORMAT_DATE | FORMAT_TIME | FORMAT_MICROSECONDS
+	timeFlags = FORMAT_DATE | FORMAT_TIME | FORMAT_MICROSECONDS | FORMAT_MILLISECONDS
 	fileFlags = FORMAT_SHORTFILENAME | FORMAT_LONGFILENAME | FORMAT_RELATIVEFILENAME
 )
 
@@ -1203,21 +1210,51 @@ func consolewrite(s []byte, level, stacktrace LEVELTYPE, flag _FORMAT, calldepth
 	if flag != FORMAT_NANO {
 		buf := getOutBuffer(s, level, flag, k1(calldepth), formatter, stacktrace, attrFormat)
 		defer buf.Free()
+		var output []byte
 		if attrFormat != nil && attrFormat.SetBodyFmt != nil {
-			consolewriter(attrFormat.SetBodyFmt(level, buf.Bytes()), false)
+			output = attrFormat.SetBodyFmt(level, buf.Bytes())
 		} else {
-			consolewriter(buf.Bytes(), false)
+			output = buf.Bytes()
 		}
+		// 为控制台输出添加颜色
+		coloredOutput := addColorByLevel(output, level)
+		consolewriter([]byte(coloredOutput), false)
 	} else {
+		var output []byte
 		if attrFormat != nil && attrFormat.SetBodyFmt != nil {
-			consolewriter(attrFormat.SetBodyFmt(level, s), false)
+			output = attrFormat.SetBodyFmt(level, s)
 		} else {
-			consolewriter(s, true)
+			output = s
 		}
+		// 为控制台输出添加颜色
+		coloredOutput := addColorByLevel(output, level)
+		consolewriter([]byte(coloredOutput), true)
 	}
 }
 
+// 根据日志级别添加颜色
+func addColorByLevel(bs []byte, level LEVELTYPE) string {
+	// 检查日志级别标识，根据级别添加颜色
+	if len(bs) >= 5 {
+		switch {
+		case bytes.HasPrefix(bs, _DEBUG):
+			return color.HiCyanString(string(bs))
+		case bytes.HasPrefix(bs, _INFO):
+			return color.GreenString(string(bs))
+		case bytes.HasPrefix(bs, _WARN):
+			return color.HiYellowString(string(bs))
+		case bytes.HasPrefix(bs, _ERROR):
+			return color.RedString(string(bs))
+		case bytes.HasPrefix(bs, _FATALE):
+			// 使用正确的颜色常量
+			return color.New(color.BgRed, color.FgWhite).Sprint(string(bs))
+		}
+	}
+	return string(bs)
+}
+
 func consolewriter(bs []byte, newline bool) {
+	// 这里不直接添加颜色，因为我们需要在consolewrite中根据级别添加
 	if newline {
 		os.Stdout.Write(append(bs, '\n'))
 	} else {
@@ -1372,14 +1409,18 @@ func formatmsg(msg []byte, t time.Time, callstack *callStack, flag _FORMAT, leve
 				timebuf.Write(itoa(day, 2))
 				timebuf.WriteByte(' ')
 			}
-			if flag&(FORMAT_TIME|FORMAT_MICROSECONDS) != 0 {
+			if flag&(FORMAT_TIME|FORMAT_MICROSECONDS|FORMAT_MILLISECONDS) != 0 {
 				hour, min, sec := t.Clock()
 				timebuf.Write(itoa(hour, 2))
 				timebuf.WriteByte(':')
 				timebuf.Write(itoa(min, 2))
 				timebuf.WriteByte(':')
 				timebuf.Write(itoa(sec, 2))
-				if flag&FORMAT_MICROSECONDS != 0 {
+				// 优先检查毫秒标志位
+				if flag&FORMAT_MILLISECONDS != 0 {
+					timebuf.WriteByte('.')
+					timebuf.Write(itoa(t.Nanosecond()/1e6, 3))
+				} else if flag&FORMAT_MICROSECONDS != 0 {
 					timebuf.WriteByte('.')
 					timebuf.Write(itoa(t.Nanosecond()/1e3, 6))
 				}

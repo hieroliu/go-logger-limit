@@ -1,11 +1,12 @@
 package bench
 
 import (
-	"github.com/donnie4w/go-logger/logger"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/hieroliu/go-logger-limit/logger"
 )
 
 func BenchmarkSerialLogger(b *testing.B) {

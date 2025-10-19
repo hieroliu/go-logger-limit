@@ -1,7 +1,15 @@
-module github.com/donnie4w/go-logger
+module github.com/hieroliu/go-logger-limit
 
-go 1.22.4
+go 1.23.0
 
-require github.com/donnie4w/gofer v0.1.8
+require (
+	github.com/donnie4w/gofer v0.2.3
+	github.com/fatih/color v1.15.0
+)
 
-require github.com/google/btree v1.1.3 // indirect
+require (
+	github.com/google/btree v1.1.3 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+)

@@ -8,5 +8,5 @@
 package logger
 
 const (
-	VERSION string = "0.28.0"
+	VERSION string = "1.30.0"
 )
