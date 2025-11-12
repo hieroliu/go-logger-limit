@@ -4,6 +4,7 @@
 // license that can be found in the LICENSE file.
 //
 // github.com/donnie4w/go-logger
+// github.com/hieroliu/go-logger-limit
 
 package logger
 
@@ -199,6 +200,22 @@ type LevelOption struct {
 //	            return msg
 //	        }
 //	    },
+//	    SetConsoleBodyFmt: func(level LEVELTYPE, msg []byte) []byte {
+//	        switch level {
+//	        case LEVEL_DEBUG:
+//	            return append([]byte("\033[34m"), append(msg, '\033', '[', '0', 'm')...) // Blue for DEBUG
+//	        case LEVEL_INFO:
+//	            return append([]byte("\033[32m"), append(msg, '\033', '[', '0', 'm')...) // Green for INFO
+//	        case LEVEL_WARN:
+//	            return append([]byte("\033[33m"), append(msg, '\033', '[', '0', 'm')...) // Yellow for WARN
+//	        case LEVEL_ERROR:
+//	            return append([]byte("\033[31m"), append(msg, '\033', '[', '0', 'm')...) // Red for ERROR
+//	        case LEVEL_FATAL:
+//	            return append([]byte("\033[41m"), append(msg, '\033', '[', '0', 'm')...) // Red background for FATAL
+//	        default:
+//	            return msg
+//	        }
+//	    },
 //	}
 type AttrFormat struct {
 	// SetLevelFmt defines a function to format log levels.
@@ -237,4 +254,6 @@ type AttrFormat struct {
 	//       return msg
 	//   }
 	SetBodyFmt func(level LEVELTYPE, msg []byte) []byte
+
+	SetConsoleColorFmt func(level LEVELTYPE, msg []byte) []byte
 }

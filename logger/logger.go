@@ -4,6 +4,7 @@
 // license that can be found in the LICENSE file.
 //
 // github.com/donnie4w/go-logger
+// github.com/hieroliu/go-logger-limit
 
 package logger
 
@@ -104,15 +105,9 @@ const (
 	// 时间精确到微秒
 	FORMAT_MICROSECONDS = _FORMAT(4)
 
-	// FORMAT_MILLISECONDS
-	//
-	// millisecond resolution: 01:23:23.123.
-	// 时间精确到毫秒
-	FORMAT_MILLISECONDS = _FORMAT(512) // 使用512作为标志位值，避免与FORMAT_NANO冲突
-
 	// FORMAT_LEVELFLAG
 	//
-	//Log level flag. e.g. [DBG],[INF],[WRN],[ERR],[FAT]
+	//Log level flag. e.g. [DEBUG],[INFO],[WARN],[ERROR],[FATAL]
 	// 日志级别表示
 	FORMAT_LEVELFLAG = _FORMAT(32)
 
@@ -154,7 +149,7 @@ const (
 	LEVEL_OFF
 )
 
-var _DEBUG, _INFO, _WARN, _ERROR, _FATALE = []byte("[DBG]"), []byte("[INF]"), []byte("[WRN]"), []byte("[ERR]"), []byte("[FAT]")
+var _DEBUG, _INFO, _WARN, _ERROR, _FATALE = []byte("[DEBUG]"), []byte("[INFO]"), []byte("[WARN]"), []byte("[ERROR]"), []byte("[FATAL]")
 
 const (
 	_TIMEMODE  _CUTMODE = 1
@@ -164,7 +159,7 @@ const (
 
 // 使用常量定义标志位组合
 const (
-	timeFlags = FORMAT_DATE | FORMAT_TIME | FORMAT_MICROSECONDS | FORMAT_MILLISECONDS
+	timeFlags = FORMAT_DATE | FORMAT_TIME | FORMAT_MICROSECONDS
 	fileFlags = FORMAT_SHORTFILENAME | FORMAT_LONGFILENAME | FORMAT_RELATIVEFILENAME
 )
 
@@ -931,6 +926,11 @@ func (t *Logging) println(format *string, _level LEVELTYPE, calldepth int, v ...
 	}
 	if t._isConsole {
 		if bs != nil {
+			if t.attrFormat != nil && t.attrFormat.SetConsoleColorFmt != nil {
+				bs = t.attrFormat.SetConsoleColorFmt(_level, bs)
+			} else {
+				bs = SetConsoleColor(_level, bs)
+			}
 			consolewriter(bs, false)
 		} else {
 			if ol := t.leveloption[_level-1]; ol != nil {
@@ -941,6 +941,23 @@ func (t *Logging) println(format *string, _level LEVELTYPE, calldepth int, v ...
 		}
 	}
 	return t
+}
+
+func SetConsoleColor(level LEVELTYPE, msg []byte) []byte {
+	switch level {
+	case LEVEL_DEBUG:
+		return []byte(color.HiCyanString(string(msg))) // Blue for DEBUG
+	case LEVEL_INFO:
+		return []byte(color.HiGreenString(string(msg))) // Green for INFO
+	case LEVEL_WARN:
+		return []byte(color.HiYellowString(string(msg))) // Yellow for WARN
+	case LEVEL_ERROR:
+		return []byte(color.RedString(string(msg))) // Red for ERROR
+	case LEVEL_FATAL:
+		return []byte(color.HiMagentaString(string(msg))) // Magenta for FATAL,
+	default:
+		return msg
+	}
 }
 
 func SetLevelOption(level LEVELTYPE, option *LevelOption) *Logging {
@@ -1210,55 +1227,27 @@ func consolewrite(s []byte, level, stacktrace LEVELTYPE, flag _FORMAT, calldepth
 	if flag != FORMAT_NANO {
 		buf := getOutBuffer(s, level, flag, k1(calldepth), formatter, stacktrace, attrFormat)
 		defer buf.Free()
-		var output []byte
-		if attrFormat != nil && attrFormat.SetBodyFmt != nil {
-			output = attrFormat.SetBodyFmt(level, buf.Bytes())
+		if attrFormat != nil && attrFormat.SetConsoleColorFmt != nil {
+			consolewriter(attrFormat.SetConsoleColorFmt(level, buf.Bytes()), false)
 		} else {
-			output = buf.Bytes()
+			consolewriter(buf.Bytes(), false)
 		}
-		// 为控制台输出添加颜色
-		coloredOutput := addColorByLevel(output, level)
-		consolewriter([]byte(coloredOutput), false)
 	} else {
-		var output []byte
-		if attrFormat != nil && attrFormat.SetBodyFmt != nil {
-			output = attrFormat.SetBodyFmt(level, s)
+		if attrFormat != nil && attrFormat.SetConsoleColorFmt != nil {
+			consolewriter(attrFormat.SetConsoleColorFmt(level, s), false)
 		} else {
-			output = s
-		}
-		// 为控制台输出添加颜色
-		coloredOutput := addColorByLevel(output, level)
-		consolewriter([]byte(coloredOutput), true)
-	}
-}
-
-// 根据日志级别添加颜色
-func addColorByLevel(bs []byte, level LEVELTYPE) string {
-	// 检查日志级别标识，根据级别添加颜色
-	if len(bs) >= 5 {
-		switch {
-		case bytes.HasPrefix(bs, _DEBUG):
-			return color.HiCyanString(string(bs))
-		case bytes.HasPrefix(bs, _INFO):
-			return color.GreenString(string(bs))
-		case bytes.HasPrefix(bs, _WARN):
-			return color.HiYellowString(string(bs))
-		case bytes.HasPrefix(bs, _ERROR):
-			return color.RedString(string(bs))
-		case bytes.HasPrefix(bs, _FATALE):
-			// 使用正确的颜色常量
-			return color.New(color.BgRed, color.FgWhite).Sprint(string(bs))
+			consolewriter(s, true)
 		}
 	}
-	return string(bs)
 }
 
 func consolewriter(bs []byte, newline bool) {
-	// 这里不直接添加颜色，因为我们需要在consolewrite中根据级别添加
 	if newline {
 		os.Stdout.Write(append(bs, '\n'))
+		//fmt.Println(string(bs))
 	} else {
 		os.Stdout.Write(bs)
+		//fmt.Print(string(bs))
 	}
 }
 
@@ -1409,18 +1398,14 @@ func formatmsg(msg []byte, t time.Time, callstack *callStack, flag _FORMAT, leve
 				timebuf.Write(itoa(day, 2))
 				timebuf.WriteByte(' ')
 			}
-			if flag&(FORMAT_TIME|FORMAT_MICROSECONDS|FORMAT_MILLISECONDS) != 0 {
+			if flag&(FORMAT_TIME|FORMAT_MICROSECONDS) != 0 {
 				hour, min, sec := t.Clock()
 				timebuf.Write(itoa(hour, 2))
 				timebuf.WriteByte(':')
 				timebuf.Write(itoa(min, 2))
 				timebuf.WriteByte(':')
 				timebuf.Write(itoa(sec, 2))
-				// 优先检查毫秒标志位
-				if flag&FORMAT_MILLISECONDS != 0 {
-					timebuf.WriteByte('.')
-					timebuf.Write(itoa(t.Nanosecond()/1e6, 3))
-				} else if flag&FORMAT_MICROSECONDS != 0 {
+				if flag&FORMAT_MICROSECONDS != 0 {
 					timebuf.WriteByte('.')
 					timebuf.Write(itoa(t.Nanosecond()/1e3, 6))
 				}

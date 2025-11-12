@@ -4,9 +4,10 @@
 // license that can be found in the LICENSE file.
 //
 // github.com/donnie4w/go-logger
+// github.com/hieroliu/go-logger-limit
 
 package logger
 
 const (
-	VERSION string = "1.3.0"
+	VERSION string = "0.28.0"
 )

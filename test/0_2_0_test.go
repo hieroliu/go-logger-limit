@@ -1,10 +1,9 @@
 package test
 
 import (
+	"github.com/hieroliu/go-logger-limit/logger"
 	"testing"
 	"time"
-
-	"github.com/hieroliu/go-logger-limit/logger"
 )
 
 /*控制台打印，直接调用打印方法Debug(),Info()等方法*/

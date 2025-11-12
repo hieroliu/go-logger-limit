@@ -1,9 +1,8 @@
 package test
 
 import (
-	"testing"
-
 	"github.com/hieroliu/go-logger-limit/logger"
+	"testing"
 )
 
 // 通过 Formatter 构造json格式输出

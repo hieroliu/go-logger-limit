@@ -1,12 +1,11 @@
 package test
 
 import (
+	"github.com/hieroliu/go-logger-limit/logger"
 	"log/slog"
 	"path/filepath"
 	"strconv"
 	"testing"
-
-	"github.com/hieroliu/go-logger-limit/logger"
 )
 
 func TestSlog(t *testing.T) {

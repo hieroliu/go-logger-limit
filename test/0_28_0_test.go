@@ -1,9 +1,8 @@
 package test
 
 import (
-	"testing"
-
 	"github.com/hieroliu/go-logger-limit/logger"
+	"testing"
 )
 
 func TestOption4mixed(t *testing.T) {
